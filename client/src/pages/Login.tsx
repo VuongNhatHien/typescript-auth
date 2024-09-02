@@ -5,24 +5,26 @@ import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import { useNavigate } from 'react-router-dom';
 
-interface resProps {
+interface User {
+  "user_id": number
+  "email": string,
+  "username": string
+  "full_name": string
+  "phone": string
+  "day_of_birth": string,
+  "decription": string
+  "is_verify": boolean
+  "avatar": string
+  "global_id_active": number
+  "created_at": string
+  "updated_at": string
+}
+
+interface Res {
     "data": {
-        "user": {
-            "user_id": number
-            "email": string,
-            "username": string
-            "full_name": string
-            "phone": string
-            "day_of_birth": string,
-            "decription": string
-            "is_verify": boolean
-            "avatar": string
-            "global_id_active": number
-            "created_at": string
-            "updated_at": string
-        },
-        "access_token": string,
-    }
+        "user": User
+        "accessToken": string,
+    },
   "status": number
   "message": string
 }
@@ -55,7 +57,7 @@ const Login = () => {
     const handleOnSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         try {
-            const res = await axios.post<resProps>(
+            const res = await axios.post<Res>(
             "http://localhost:8080/api/auth/login",
             {
                 ...inputValue,
@@ -67,11 +69,11 @@ const Login = () => {
 
             localStorage.setItem("user", JSON.stringify({
             user: res.data.data.user,
-            access_token: res.data.data.access_token,
+            access_token: res.data.data.accessToken,
             }))
 
             console.log(res.status)
-            console.log(res.data.data)
+            console.log(res.data.message)
 
             navigate('/')
 

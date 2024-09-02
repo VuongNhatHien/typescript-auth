@@ -2,123 +2,65 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
-import {jwtDecode} from 'jwt-decode';
+import { Button } from "react-bootstrap";
 
-interface resProps {
-    "data": {
-        "access_token": string,
-    },
-    "status": number
-    "message": string
-}
+import getUserStorage from "../utils/getUserStorage";
+import getAccessToken from "../utils/getAccessToken";
 
-interface userProps {
-    "user_id": number,
-    "email": string,
-    "username": string,
-    "full_name": string,
-    "phone": string,
-    "day_of_birth": string,
-    "decription": string,
-    "is_verify": boolean,
-    "avatar": string,
-    "global_id_active": number,
-    "created_at": string,
-    "updated_at": string,
-}
-
-interface userStorageProps {
-    "user": userProps,
-    "access_token": string
-}
-
-// interface resUser {
-//     "data": userProps,
-//     "status": number,
-//     "message": string,
-// }
+import { UserConfig, UserStorageConfig, ResponseGetUserConfig, ResponseLogoutConfig } from "../interface";
 
 const Home = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState<userProps>();
-  // const [email, setEmail] = useState("")
+  const [user, setUser] = useState<UserConfig>();
+  const [phone, setPhone] = useState("undefined")
 
   useEffect(() => {
-    const verify = async () => {
       try {
-      const temp: string | null = localStorage.getItem("user")
+        const userStorage: UserStorageConfig | null = getUserStorage()
+        if (!userStorage) {
+          console.log("No record in local storage, navigated to login page")
+          localStorage.removeItem("user")
+          navigate('/login')
+          return
+        }
+        setUser(userStorage.user);
+      } catch (err) {
+        console.log(err)
+      }    
+  }, []);
 
-      if (!temp) {
-        console.log("Not authorized, moved to login page")
+  const getPhoneNum = async () => {
+    try {
+      const userStorage: UserStorageConfig = getUserStorage()
+      //Get access token from local storage, if expired refresh a new one
+      const access_token = await getAccessToken()
+      if (!access_token) {
+        console.log("Cannot get access token")
+        localStorage.removeItem("user")
         navigate('/login')
         return
       }
-      const userStorage: userStorageProps = JSON.parse(temp)
-      
-      var access_token = userStorage.access_token
-      if (!access_token){
-        return
-      }
-      const decode = jwtDecode(access_token)
-      if (!decode.exp) {
-        console.log("No exp")
-        return
-      }
 
-      if (Date.now() >= decode.exp * 1000) {
-        try {
-        const res = await axios.post<resProps>(
-          "http://localhost:8080/api/auth/refresh",
-          {},
-          { withCredentials: true }
-          );
-        // console.log(res.data.message)
-
-        access_token = res.data.data.access_token;
-        localStorage.setItem("user", JSON.stringify({
-          user: userStorage.user,
-          access_token: access_token,
-          }))
-
-
-        } catch (err) {
-          console.log(err)
-          localStorage.removeItem("user");
-          navigate('/login')
+      const response = await axios.get<ResponseGetUserConfig>(
+        "http://localhost:8080/api/users/" + userStorage.user.user_id,
+        {
+            headers: {
+            Authorization: "Bearer " + access_token
+            }
         }
-      }
-
-      // const config = {
-      //   headers: { Authorization: `Bearer ${access_token}` }
-      // };
-
-      // const response = await axios.get<resUser>(
-      //   "http://localhost:8080/api/users/" + userStorage.user.user_id,
-      //   {
-      //       // params:{
-      //       //     user_id: userStorage.user.user_id
-      //       // },
-      //       headers: {
-      //       Authorization: "Bearer " + access_token
-      //       }
-      //   }
-      // )
-
-      setUser(userStorage.user);
-
-      // setEmail(response.data.data.email)
+      )
+      setPhone(response.data.data.user.phone);
     } catch (err) {
       console.log(err)
+      localStorage.removeItem("user")
+      navigate('/login')
+      return
     }
   }
-    verify()
-    
-  }, []);
-
 
   const logout = async () => {
     try {
-      const res = await axios.post<resProps>(
+      const res = await axios.post<ResponseLogoutConfig>(
         "http://localhost:8080/api/auth/logout",
         {},
         { withCredentials: true }
@@ -138,8 +80,13 @@ const Home = () => {
       <>
         <div className="home_page">
             <h2>Hello {user.full_name}</h2>
-            {/* <h2>Email: {email}</h2> */}
-          <button onClick={logout}>LOGOUT</button>
+            <h2>Phone: {phone}</h2>
+          <Button variant="primary" onClick={logout}>
+            Logout
+          </Button>
+          <Button variant="primary" onClick={getPhoneNum}>
+            Get phone number
+          </Button>
         </div>
       </>
     );
