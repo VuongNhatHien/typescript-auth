@@ -235,45 +235,8 @@ const loginUser = async (req, res) => {
 };
 
 const logoutUser = async (req, res) => {
-  const refreshToken = req.cookies.refreshLogout;
-  if (!refreshToken)
-    return res.status(401).json({
-      data: {},
-      status: 401,
-      message: "You're not authenticated!",
-    });
-
   res.clearCookie("refreshToken");
   res.clearCookie("refreshLogout");
-
-  const user = await User.findOne({ where: { refresh_token: refreshToken } });
-  if (!user)
-    return res.status(404).json({
-      data: {},
-      status: 404,
-      message: "Unauthorized!",
-    });
-
-  jwt.verify(refreshToken, process.env.JWT_REFRESH_KEY, (err, user) => {
-    if (err) {
-      if (err.name === "TokenExpiredError")
-        return res.status(401).json({
-          data: {},
-          status: 401,
-          message: "Token has expired!",
-        });
-      else
-        return res.status(403).json({
-          data: {},
-          status: 403,
-          message: "Token is not valid!",
-        });
-    }
-  });
-
-  user.refresh_token = null;
-  await user.save();
-
   return res.status(200).json({
     data: {},
     status: 200,
@@ -283,6 +246,7 @@ const logoutUser = async (req, res) => {
 
 const requestRefreshToken = async (req, res) => {
   const refreshToken = req.cookies.refreshToken;
+  console.log(1, refreshToken)
   if (!refreshToken)
     return res.status(401).json({
       data: {},
@@ -323,6 +287,7 @@ const requestRefreshToken = async (req, res) => {
       process.env.JWT_REFRESH_KEY,
       process.env.REFRESH_TIME
     );
+    console.log(2, newRefreshToken)
 
     res.cookie("refreshToken", newRefreshToken, {
       httpOnly: true,

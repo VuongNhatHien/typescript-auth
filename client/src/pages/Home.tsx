@@ -60,8 +60,15 @@ const Home = () => {
         return
       }
       const decode = jwtDecode(access_token)
+      if (!decode.exp) {
+        console.log("No exp")
+        return
+      }
 
-      if (Date.now() >= (decode.exp? decode.exp * 1000 : 0)) {
+      console.log(access_token)
+
+      if (Date.now() >= decode.exp * 1000) {
+        console.log(69)
         try {
         const res = await axios.post<resProps>(
           "http://localhost:8080/api/auth/refresh",
@@ -69,15 +76,18 @@ const Home = () => {
           { withCredentials: true }
           );
         // console.log(res.data.message)
+
         access_token = res.data.data.access_token;
+        localStorage.setItem("user", JSON.stringify({
+          user: userStorage.user,
+          access_token: access_token,
+          }))
 
 
         } catch (err) {
           console.log(err)
           localStorage.removeItem("user");
           navigate('/login')
-          //window.location.reload();
-          // await logout()
         }
       }
 
