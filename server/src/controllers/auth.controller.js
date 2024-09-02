@@ -287,19 +287,29 @@ const requestRefreshToken = async (req, res) => {
     return res.status(401).json({
       data: {},
       status: 401,
-      message: "You're not authenticated!",
+      message: "Expired!",
     });
 
   jwt.verify(refreshToken, process.env.JWT_REFRESH_KEY, async (err, user) => {
-    const userDB = await User.findByPk(user.user_id);
-
-    if (err || !userDB || refreshToken !== userDB.dataValues.refresh_token) {
+    if (err) {
       res.clearCookie("refreshToken");
       res.clearCookie("refreshLogout");
       return res.status(401).json({
         data: {},
         status: 401,
-        message: "You're not authenticated!",
+        message: err,
+      });
+    }
+    
+    const userDB = await User.findByPk(user.user_id);
+
+    if (!userDB || refreshToken !== userDB.dataValues.refresh_token) {
+      res.clearCookie("refreshToken");
+      res.clearCookie("refreshLogout");
+      return res.status(401).json({
+        data: {},
+        status: 401,
+        message: "Verify failed 2!",
       });
     }
 
