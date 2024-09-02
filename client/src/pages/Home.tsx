@@ -12,7 +12,7 @@ import { UserConfig, UserStorageConfig, ResponseGetUserConfig, ResponseLogoutCon
 const Home = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<UserConfig>();
-  const [phone, setPhone] = useState("undefined")
+  const [email, setEmail] = useState("undefined")
 
   useEffect(() => {
       try {
@@ -29,7 +29,7 @@ const Home = () => {
       }    
   }, []);
 
-  const getPhoneNum = async () => {
+  const getEmail = async () => {
     try {
       const userStorage: UserStorageConfig = getUserStorage()
       //Get access token from local storage, if expired refresh a new one
@@ -49,7 +49,7 @@ const Home = () => {
             }
         }
       )
-      setPhone(response.data.data.user.phone);
+      setEmail(response.data.data.user.email);
     } catch (err) {
       console.log(err)
       localStorage.removeItem("user")
@@ -80,12 +80,12 @@ const Home = () => {
       <>
         <div className="home_page">
             <h2>Hello {user.full_name}</h2>
-            <h2>Phone: {phone}</h2>
+            <h2>Email: {email}</h2>
           <Button variant="primary" onClick={logout}>
             Logout
           </Button>
-          <Button variant="primary" onClick={getPhoneNum}>
-            Get phone number
+          <Button variant="primary" onClick={getEmail}>
+            Get email
           </Button>
         </div>
       </>
