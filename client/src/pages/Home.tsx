@@ -32,16 +32,16 @@ interface userStorageProps {
     "access_token": string
 }
 
-interface resUser {
-    "data": userProps,
-    "status": number,
-    "message": string,
-}
+// interface resUser {
+//     "data": userProps,
+//     "status": number,
+//     "message": string,
+// }
 
 const Home = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<userProps>();
-  const [email, setEmail] = useState("")
+  // const [email, setEmail] = useState("")
 
   useEffect(() => {
     const verify = async () => {
@@ -71,9 +71,13 @@ const Home = () => {
         // console.log(res.data.message)
         access_token = res.data.data.access_token;
 
-        } catch (err: any) {
-          console.log(err.response.data.message)
-          await logout()
+
+        } catch (err) {
+          console.log(err)
+          localStorage.removeItem("user");
+          navigate('/login')
+          //window.location.reload();
+          // await logout()
         }
       }
 
@@ -81,21 +85,21 @@ const Home = () => {
       //   headers: { Authorization: `Bearer ${access_token}` }
       // };
 
-      const response = await axios.get<resUser>(
-        "http://localhost:8080/api/users/" + userStorage.user.user_id,
-        {
-            // params:{
-            //     user_id: userStorage.user.user_id
-            // },
-            headers: {
-            Authorization: "Bearer " + access_token
-            }
-        }
-      )
+      // const response = await axios.get<resUser>(
+      //   "http://localhost:8080/api/users/" + userStorage.user.user_id,
+      //   {
+      //       // params:{
+      //       //     user_id: userStorage.user.user_id
+      //       // },
+      //       headers: {
+      //       Authorization: "Bearer " + access_token
+      //       }
+      //   }
+      // )
 
       setUser(userStorage.user);
 
-      setEmail(response.data.data.email)
+      // setEmail(response.data.data.email)
     } catch (err) {
       console.log(err)
     }
@@ -127,7 +131,7 @@ const Home = () => {
       <>
         <div className="home_page">
             <h2>Hello {user.full_name}</h2>
-            <h2>Email: {email}</h2>
+            {/* <h2>Email: {email}</h2> */}
           <button onClick={logout}>LOGOUT</button>
         </div>
       </>
