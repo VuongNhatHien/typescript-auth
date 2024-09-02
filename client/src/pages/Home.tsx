@@ -65,10 +65,7 @@ const Home = () => {
         return
       }
 
-      console.log(access_token)
-
       if (Date.now() >= decode.exp * 1000) {
-        console.log(69)
         try {
         const res = await axios.post<resProps>(
           "http://localhost:8080/api/auth/refresh",
