@@ -41,7 +41,7 @@ const registerUser = async (req, res) => {
     const salt = bcrypt.genSaltSync(10);
     const hashedPassword = bcrypt.hashSync(req.body.password, salt);
   
-    const verifyCode = generageVerifyCode(req.body.username);
+    const verifyCode = generageVerifyCode();
   
     const newUser = {
       email: req.body.email,
@@ -83,7 +83,7 @@ const registerUser = async (req, res) => {
 
 const verifyEmail = async (req, res) => {
   try {
-    if (!req.body.verify_code)
+    if (!req.body.verify_code || !req.body.email)
       return formatResponse(
         res,
         {},
@@ -92,8 +92,9 @@ const verifyEmail = async (req, res) => {
       );
 
     const verifyCode = req.body.verify_code;
-    const username = verifyCode.slice(0, verifyCode.length - 7);
-    const user = await User.findOne({ where: { username: username } });
+    // const username = verifyCode.slice(0, verifyCode.length - 7);
+    const email = req.body.email
+    const user = await User.findOne({ where: { email: email } });
     if (user.is_verify)
       if (!req.body.verify_code)
         return formatResponse(
@@ -152,7 +153,7 @@ const getVerifyCode = async (req, res) => {
         STATUS_CODE.NOT_FOUND,
         "Email not found!"
       );
-    const verifyCode = generageVerifyCode(user.username);
+    const verifyCode = generageVerifyCode();
   
     user.verify_code = verifyCode;
     await user.save();
@@ -179,7 +180,7 @@ const getVerifyCode = async (req, res) => {
 
 const resetPassword = async (req, res) => {
   try {
-    if (!req.body.password || !req.body.verify_code)
+    if (!req.body.password || !req.body.verify_code || !req.body.email)
       return formatResponse(
         res,
         {},
@@ -188,8 +189,8 @@ const resetPassword = async (req, res) => {
       );
 
     const verifyCode = req.body.verify_code;
-    const username = verifyCode.slice(0, verifyCode.length - 7);
-    const user = await User.findOne({ where: { username: username } });
+    const email = req.body.email
+    const user = await User.findOne({ where: { email: email } });
 
     if (user.verify_code !== verifyCode) {
       return formatResponse(

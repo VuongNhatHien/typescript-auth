@@ -1,9 +1,8 @@
-// import React from 'react';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { UserConfig } from '../interface';
 
 
@@ -16,6 +15,7 @@ interface VerifyResConfig {
 }
 const Verify = () => {
     const navigate = useNavigate()
+    const location = useLocation()
 
     useEffect( () => {
         const userStorage = localStorage.getItem("user");
@@ -25,18 +25,7 @@ const Verify = () => {
           }
       },[])
 
-    const [inputValue, setInputValue] = useState({
-        verify_code: ""
-      });
-    // const { username, password } = inputValue;
-
-    const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const {name, value} = e.target;
-        setInputValue({
-          ...inputValue,
-          [name]: value,
-        });
-      };
+    const [verifyCode, setVerifyCode] = useState("")
 
     const handleOnSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -44,22 +33,18 @@ const Verify = () => {
             const res = await axios.post<VerifyResConfig>(
             "http://localhost:8080/api/auth/email/verify",
             {
-                ...inputValue,
+                email: location.state.email,
+                verify_code: verifyCode
             },
             );
 
-        //   const { user, access_token } = response.data.data;
 
             console.log(res.status)
             console.log(res.data.message)
             alert(res.data.message)
 
             navigate('/login')
-
-            setInputValue({
-            ...inputValue,
-            verify_code: ""
-            });
+            setVerifyCode("")
 
         } catch (error) {
             console.log(error);
@@ -72,7 +57,7 @@ const Verify = () => {
     <Form onSubmit={handleOnSubmit}>
       <Form.Group className="mb-3" controlId="formBasicEmail">
         <Form.Label>Verify code</Form.Label>
-        <Form.Control type="text" placeholder="Enter your verify code" name='verify_code' onChange={handleOnChange}/>
+        <Form.Control type="text" placeholder="Enter your verify code" name='verify_code' onChange={ e => setVerifyCode(e.target.value) }/>
       </Form.Group>
 
       <Button variant="primary" type="submit">

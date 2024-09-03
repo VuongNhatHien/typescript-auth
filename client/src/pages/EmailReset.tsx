@@ -23,18 +23,7 @@ const EmailReset = () => {
           }
       },[])
 
-    const [inputValue, setInputValue] = useState({
-        email: ""
-      });
-    // const { username, password } = inputValue;
-
-    const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const {name, value} = e.target;
-        setInputValue({
-          ...inputValue,
-          [name]: value,
-        });
-      };
+    const [email, setEmail] = useState("")
 
     const handleOnSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -42,22 +31,17 @@ const EmailReset = () => {
             const res = await axios.post<EmailResetConfig>(
             "http://localhost:8080/api/auth/email/code",
             {
-                ...inputValue,
+                email: email
             },
             );
-
-        //   const { user, access_token } = response.data.data;
 
             console.log(res.status)
             console.log(res.data.message)
             alert("Verify code sent!")
 
-            navigate('/reset')
+            navigate('/reset', {state: {email: email}})
 
-            setInputValue({
-            ...inputValue,
-            email: ""
-            });
+            setEmail("")
 
         } catch (error) {
             console.log(error);
@@ -70,7 +54,7 @@ const EmailReset = () => {
     <Form onSubmit={handleOnSubmit}>
       <Form.Group className="mb-3" controlId="formBasicEmail">
         <Form.Label>Email</Form.Label>
-        <Form.Control type="text" placeholder="Enter your email to get verify code" name='email' onChange={handleOnChange}/>
+        <Form.Control type="text" placeholder="Enter your email to get verify code" name='email' onChange={ e => setEmail(e.target.value) }/>
       </Form.Group>
 
       <Button variant="primary" type="submit">

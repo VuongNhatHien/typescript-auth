@@ -28,7 +28,6 @@ const Register = () => {
         email: "",
         password: "",
       });
-    // const { username, password } = inputValue;
 
     const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const {name, value} = e.target;
@@ -48,12 +47,10 @@ const Register = () => {
             },
             );
 
-        //   const { user, access_token } = response.data.data;
-
             console.log(res.status)
             console.log(res.data.message)
             alert(res.data.message)
-            navigate('/verify')
+            navigate('/verify', {state: {email: inputValue.email}})
 
             setInputValue({
             ...inputValue,
